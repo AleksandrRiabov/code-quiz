@@ -10,6 +10,9 @@ const finalScore = document.querySelector("#final-score");
 const initials = document.querySelector("#initials");
 const submitBtn = document.querySelector("#submit");
 
+const soundCorrect = new Audio('../assets/sfx/correct.wav');
+const soundIncorrect = new Audio('../assets/sfx/incorrect.wav');
+
 let timeLeft = 75;
 let score = 0;
 let timerId;
@@ -65,10 +68,12 @@ function checkTheAnswer(question, questionIndex) {
   function checkResult(e) {
     //Check if user answered correct
     if (e.target.dataset.index == question.correctAnswer) {
+      soundCorrect.play();
       score++;
       localStorage.setItem("score", score);
       feedback.textContent = "Correct!";
     } else {
+      soundIncorrect.play();
       timeLeft -= 15;
       feedback.textContent = "Wrong!";
     }
@@ -78,7 +83,7 @@ function checkTheAnswer(question, questionIndex) {
     //Removed event listener
     choices.removeEventListener("click", checkResult);
 
-    //If more questions available repeat the proccess. Ask question and check question.
+    //If more questions available repeat the proccess. Ask question and check results.
     //Else display results
     if (questionIndex + 1 === questions.length) {
       clearInterval(timerId);
