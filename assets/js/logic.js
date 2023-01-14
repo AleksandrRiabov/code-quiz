@@ -10,11 +10,11 @@ const finalScore = document.querySelector("#final-score");
 const initials = document.querySelector("#initials");
 const submitBtn = document.querySelector("#submit");
 
-const soundCorrect = new Audio('../assets/sfx/correct.wav');
-const soundIncorrect = new Audio('../assets/sfx/incorrect.wav');
-const letsGoSound = new Audio('../assets/sfx/088186_let39s-gowav-86025.wav');
-const surprisedChildSound = new Audio('../assets/sfx/surprised-child-voice-sound-113127.wav');
-const claps = new Audio('../assets/sfx/claps-44774.wav');
+const soundCorrect = new Audio('../sfx/correct.wav');
+const soundIncorrect = new Audio('../sfx/incorrect.wav');
+const letsGoSound = new Audio('../sfx/088186_let39s-gowav-86025.wav');
+const surprisedChildSound = new Audio('../sfx/surprised-child-voice-sound-113127.wav');
+const claps = new Audio('../sfx/claps-44774.wav');
 
 let timeLeft = 76;
 let score = 0;
@@ -144,7 +144,7 @@ const saveResultToLocalStorage = () => {
   };
 
   //If some results exists add to existing array new result
-  //Else just add result to local storage
+  //Else just add result in array to local storage
   if (localStorage.getItem("results")) {
     //retrive from local storage
     const allResults = JSON.parse(localStorage.getItem("results"));
