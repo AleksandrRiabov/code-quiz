@@ -34,7 +34,6 @@ function startTimer() {
       timeSpan.textContent = timeLeft;
     } else {
       clearInterval(timerId);
-      // window.location.href = './highscores.html';
       displayResults();
     }
   }, 1000);
@@ -123,4 +122,6 @@ const saveResultToLocalStorage = () => {
     localStorage.setItem("results", JSON.stringify([currentPersonResult]));
   }
   submitBtn.removeEventListener("click", saveResultToLocalStorage);
+  //transfer to highscores page
+  window.location.href = './highscores.html';
 };
