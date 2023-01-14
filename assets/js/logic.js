@@ -92,10 +92,31 @@ function displayResults() {
   questionsContainer.classList.add('hide');
   endScreen.classList.remove('hide');
   finalScore.textContent = score;
+  submitBtn.addEventListener('click', saveResultToLocalStorage);
 }
 
 
+const saveResultToLocalStorage = () => {
+  const currentPersonResult = {
+    score,
+    initials: initials.value
+  }
 
+  //If some results exists add to existing list new result
+  //Else just add results to local storage
+  if (localStorage.getItem('results')) {
+    //retrive from local storage
+    const allResults = JSON.parse(localStorage.getItem('results'));
+    //Add current results to all results array
+    const updatedResults = [...allResults, currentPersonResult]
+    //Save updated list of all results to local storage
+    localStorage.setItem('results', JSON.stringify(updatedResults));
+  } else {
+    // Save to local storage
+    localStorage.setItem('results', JSON.stringify([currentPersonResult]));
+  }
+  submitBtn.removeEventListener('click', saveResultToLocalStorage);
+}
 
 // GIVEN I am taking a code quiz
 // WHEN I click the start button
