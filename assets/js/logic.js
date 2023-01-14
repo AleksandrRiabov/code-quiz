@@ -1,61 +1,83 @@
-const timeSpan = document.querySelector('#time');
-const startBtn = document.querySelector('#start');
-const questionsContainer = document.querySelector('#questions');
-const questionTitle = document.querySelector('#question-title');
-const choices = document.querySelector('#choices');
-const feedback = document.querySelector('#feedback');
-const startScreen = document.querySelector('#start-screen');
-const endScreen = document.querySelector('#end-screen');
-const finalScore = document.querySelector('#final-score');
-const initials = document.querySelector('#initials');
-const submitBtn = document.querySelector('#submit');
+const timeSpan = document.querySelector("#time");
+const startBtn = document.querySelector("#start");
+const questionsContainer = document.querySelector("#questions");
+const questionTitle = document.querySelector("#question-title");
+const choices = document.querySelector("#choices");
+const feedback = document.querySelector("#feedback");
+const startScreen = document.querySelector("#start-screen");
+const endScreen = document.querySelector("#end-screen");
+const finalScore = document.querySelector("#final-score");
+const initials = document.querySelector("#initials");
+const submitBtn = document.querySelector("#submit");
 
-let timeLeft = 95;
+let timeLeft = 75;
 let score = 0;
 let timerId;
 
-const startTimer = () => {
+startBtn.addEventListener("click", startTheQuiz);
+
+//=== Main Function to start the quiz
+function startTheQuiz() {
+  //remove starting screen
+  startScreen.classList.add("hide");
+
+  startTimer();
+  askQuestion(questions[0]);
+  checkTheAnswer(questions[0], 0);
+}
+
+//=== Function to start timer
+function startTimer() {
   timerId = setInterval(() => {
     if (timeLeft > 0) {
       timeLeft--;
       timeSpan.textContent = timeLeft;
     } else {
       clearInterval(timerId);
-      window.location.href = './highscores.html';
+      // window.location.href = './highscores.html';
+      displayResults();
     }
   }, 1000);
 }
 
-//Start quiz
-const startTheQuiz = () => {
-  startScreen.classList.add('hide');
-  startTimer();
-  askQuestion(questions[0]);
-  checkTheAnswer(questions[0], 0)
+//=== Function to display question and variants
+function askQuestion(question) {
+  //Unhide if hidden
+  if (questionsContainer.classList.contains("hide")) {
+    questionsContainer.classList.remove("hide");
+  }
+  //Display question
+  questionTitle.textContent = question.question;
+  //Clear previous variants and populate current question variants
+  choices.innerHTML = "";
+  question.answers.forEach((answer, index) => {
+    const variant = document.createElement("button");
+    variant.textContent = `${index + 1}. ${answer}`;
+    variant.dataset.index = index;
+    choices.append(variant);
+  });
 }
 
-startBtn.addEventListener('click', startTheQuiz);
-
-
+//=== Function to check if user selected correct answer and display feedback
+//If some questions left will call askQuestion function to repeat the proccess
 function checkTheAnswer(question, questionIndex) {
-
-  choices.addEventListener('click', checkResult);
+  choices.addEventListener("click", checkResult);
 
   function checkResult(e) {
-    //Check if user selected answer  = correct answer
+    //Check if user answered correct
     if (e.target.dataset.index == question.correctAnswer) {
       score++;
-      localStorage.setItem('score', score);
-      feedback.textContent = 'Correct!'
+      localStorage.setItem("score", score);
+      feedback.textContent = "Correct!";
     } else {
       timeLeft -= 15;
-      feedback.textContent = 'Wrong!'
+      feedback.textContent = "Wrong!";
     }
     //Display question feedback
-    feedback.classList.remove('hide');
+    feedback.classList.remove("hide");
 
     //Removed event listener
-    choices.removeEventListener('click', checkResult);
+    choices.removeEventListener("click", checkResult);
 
     //If more questions available repeat the proccess. Ask question and check question.
     //Else display results
@@ -69,63 +91,36 @@ function checkTheAnswer(question, questionIndex) {
   }
 }
 
-
-//Display question and variants
-function askQuestion(question) {
-  //Unhide if hidden
-  if (questionsContainer.classList.contains('hide')) {
-    questionsContainer.classList.remove('hide');
-  }
-  //Display question
-  questionTitle.textContent = question.question;
-  //Clear previous variants and populate current question variants
-  choices.innerHTML = '';
-  question.answers.forEach((answer, index) => {
-    const variant = document.createElement('button');
-    variant.textContent = `${index + 1}. ${answer}`;
-    variant.dataset.index = index;
-    choices.append(variant);
-  });
-}
-
+//=== Function show final score screen
 function displayResults() {
-  questionsContainer.classList.add('hide');
-  endScreen.classList.remove('hide');
+  questionsContainer.classList.add("hide");
+  endScreen.classList.remove("hide");
+  endScreen.querySelector("h2").textContent = timeLeft
+    ? "All questions complete!"
+    : "You run out of time!";
   finalScore.textContent = score;
-  submitBtn.addEventListener('click', saveResultToLocalStorage);
+  submitBtn.addEventListener("click", saveResultToLocalStorage);
 }
 
-
+//=== Function saves current score and initials to local storage
 const saveResultToLocalStorage = () => {
   const currentPersonResult = {
     score,
-    initials: initials.value
-  }
+    initials: initials.value,
+  };
 
-  //If some results exists add to existing list new result
-  //Else just add results to local storage
-  if (localStorage.getItem('results')) {
+  //If some results exists add to existing array new result
+  //Else just add result to local storage
+  if (localStorage.getItem("results")) {
     //retrive from local storage
-    const allResults = JSON.parse(localStorage.getItem('results'));
-    //Add current results to all results array
-    const updatedResults = [...allResults, currentPersonResult]
+    const allResults = JSON.parse(localStorage.getItem("results"));
+    //Add current result to array with all results
+    const updatedResults = [...allResults, currentPersonResult];
     //Save updated list of all results to local storage
-    localStorage.setItem('results', JSON.stringify(updatedResults));
+    localStorage.setItem("results", JSON.stringify(updatedResults));
   } else {
-    // Save to local storage
-    localStorage.setItem('results', JSON.stringify([currentPersonResult]));
+    // Save result to local storage
+    localStorage.setItem("results", JSON.stringify([currentPersonResult]));
   }
-  submitBtn.removeEventListener('click', saveResultToLocalStorage);
-}
-
-// GIVEN I am taking a code quiz
-// WHEN I click the start button
-// THEN a timer starts and I am presented with a question
-// WHEN I answer a question
-// THEN I am presented with another question
-// WHEN I answer a question incorrectly
-// THEN time is subtracted from the clock
-// WHEN all questions are answered or the timer reaches 0
-// THEN the game is over
-// WHEN the game is over
-// THEN I can save my initials and score
+  submitBtn.removeEventListener("click", saveResultToLocalStorage);
+};
