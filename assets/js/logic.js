@@ -12,8 +12,11 @@ const submitBtn = document.querySelector("#submit");
 
 const soundCorrect = new Audio('../assets/sfx/correct.wav');
 const soundIncorrect = new Audio('../assets/sfx/incorrect.wav');
+const letsGoSound = new Audio('../assets/sfx/088186_let39s-gowav-86025.wav');
+const surprisedChildSound = new Audio('../assets/sfx/surprised-child-voice-sound-113127.wav');
+const claps = new Audio('../assets/sfx/claps-44774.wav');
 
-let timeLeft = 75;
+let timeLeft = 76;
 let score = 0;
 let timerId;
 
@@ -21,7 +24,7 @@ startBtn.addEventListener("click", startTheQuiz);
 
 //=== Main Function to start the quiz
 function startTheQuiz() {
-  //remove starting screen
+  letsGoSound.play();
   startScreen.classList.add("hide");
 
   startTimer();
@@ -36,6 +39,7 @@ function startTimer() {
       timeLeft--;
       timeSpan.textContent = timeLeft;
     } else {
+      surprisedChildSound.play();
       clearInterval(timerId);
       displayResults();
     }
@@ -44,7 +48,8 @@ function startTimer() {
 
 //=== Function to display question and variants
 function askQuestion(question) {
-  //Unhide if hidden
+  if (timeLeft <= 0) return;
+  //Unhide questions container if hidden
   if (questionsContainer.classList.contains("hide")) {
     questionsContainer.classList.remove("hide");
   }
@@ -63,46 +68,71 @@ function askQuestion(question) {
 //=== Function to check if user selected correct answer and display feedback
 //If some questions left will call askQuestion function to repeat the proccess
 function checkTheAnswer(question, questionIndex) {
+  //When user selects the answer
   choices.addEventListener("click", checkResult);
 
   function checkResult(e) {
+    if (e.target.id === 'choices') return;
+
+    e.target.style.background = '#bd60e7';
+    feedback.classList.add("hide");
+
     //Check if user answered correct
     if (e.target.dataset.index == question.correctAnswer) {
       soundCorrect.play();
       score++;
       localStorage.setItem("score", score);
-      feedback.textContent = "Correct!";
+      delay(changeFeedback, 600, 'Correct!');
     } else {
       soundIncorrect.play();
       timeLeft -= 15;
-      feedback.textContent = "Wrong!";
+      delay(changeFeedback, 600, 'Wrong!');
     }
-    //Display question feedback
-    feedback.classList.remove("hide");
 
-    //Removed event listener
+    //Removed event listener 
     choices.removeEventListener("click", checkResult);
 
-    //If more questions available repeat the proccess. Ask question and check results.
-    //Else display results
-    if (questionIndex + 1 === questions.length) {
-      clearInterval(timerId);
-      displayResults();
-    } else {
-      askQuestion(questions[questionIndex + 1]);
-      checkTheAnswer(questions[questionIndex + 1], questionIndex + 1);
-    }
+    //Ask another question after delay
+    delay(repeatProccess, 600, questionIndex);
+  }
+}
+
+//=== Function change feedback 
+function changeFeedback(text) {
+  feedback.textContent = text;
+  feedback.classList.remove("hide");
+}
+
+//=== Function to ask question again
+function repeatProccess(questionIndex) {
+  //If more questions available repeat the proccess. Ask question and check results.
+  //Else display results
+  if (questionIndex + 1 === questions.length) {
+    clearInterval(timerId);
+    displayResults();
+  } else {
+    askQuestion(questions[questionIndex + 1]);
+    checkTheAnswer(questions[questionIndex + 1], questionIndex + 1);
   }
 }
 
 //=== Function show final score screen
 function displayResults() {
+  const isTimeLeft = timeLeft >= 0;
+  if (isTimeLeft) claps.play();
+  //hide questions screen
   questionsContainer.classList.add("hide");
+  //show result screen
   endScreen.classList.remove("hide");
-  endScreen.querySelector("h2").textContent = timeLeft
+  //display message deppending on the result
+  endScreen.querySelector("h2").textContent = timeLeft > 0
     ? "All questions complete!"
-    : "You run out of time!";
+    : "No more time left!";
+
   finalScore.textContent = score;
+  //if time left less than 0 still show 0
+  timeSpan.textContent = isTimeLeft ? timeLeft : 0;
+
   submitBtn.addEventListener("click", saveResultToLocalStorage);
 }
 
@@ -130,3 +160,12 @@ const saveResultToLocalStorage = () => {
   //transfer to highscores page
   window.location.href = './highscores.html';
 };
+
+//=== function delay
+function delay(callBack, time, arguments) {
+  setTimeout(() => {
+    if (timeLeft) {
+      callBack(arguments);
+    }
+  }, time);
+}
