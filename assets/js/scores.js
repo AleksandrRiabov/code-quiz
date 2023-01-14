@@ -33,6 +33,6 @@ function renderAllResults() {
 //=== Function to create single list item with result
 function renderListItem(result) {
   const li = document.createElement("li");
-  li.textContent = `${result.initials} - ${result.score}`;
+  li.textContent = `${(result.initials).toUpperCase()} - ${result.score}`;
   highScoresList.append(li);
 }
