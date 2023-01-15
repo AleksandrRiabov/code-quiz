@@ -10,11 +10,13 @@ const finalScore = document.querySelector("#final-score");
 const initials = document.querySelector("#initials");
 const submitBtn = document.querySelector("#submit");
 
-const soundCorrect = new Audio('./assets/sfx/correct.wav');
-const soundIncorrect = new Audio('./assets/sfx/incorrect.wav');
-const letsGoSound = new Audio('./assets/sfx/088186_let39s-gowav-86025.wav');
-const surprisedChildSound = new Audio('./assets/sfx/surprised-child-voice-sound-113127.wav');
-const claps = new Audio('./assets/sfx/claps-44774.wav');
+const soundCorrect = new Audio("./assets/sfx/correct.wav");
+const soundIncorrect = new Audio("./assets/sfx/incorrect.wav");
+const letsGoSound = new Audio("./assets/sfx/088186_let39s-gowav-86025.wav");
+const surprisedChildSound = new Audio(
+  "./assets/sfx/surprised-child-voice-sound-113127.wav"
+);
+const claps = new Audio("./assets/sfx/claps-44774.wav");
 
 let timeLeft = 76;
 let score = 0;
@@ -72,100 +74,85 @@ function checkTheAnswer(question, questionIndex) {
   choices.addEventListener("click", checkResult);
 
   function checkResult(e) {
-    if (e.target.id === 'choices') return;
+    if (e.target.id === "choices") return;
 
-    e.target.style.background = '#bd60e7';
+    e.target.style.background = "#bd60e7";
     feedback.classList.add("hide");
 
     //Check if user answered correct
     if (e.target.dataset.index == question.correctAnswer) {
       soundCorrect.play();
       score++;
-      localStorage.setItem("score", score);
-      delay(changeFeedback, 600, 'Correct!');
+      delay(changeFeedback, 600, "Correct!");
     } else {
       soundIncorrect.play();
       timeLeft -= 15;
-      delay(changeFeedback, 600, 'Wrong!');
+      delay(changeFeedback, 600, "Wrong!");
     }
 
-    //Removed event listener 
+    //Removed event listener
     choices.removeEventListener("click", checkResult);
 
-    //Ask another question after delay
-    delay(repeatProccess, 600, questionIndex);
+    //Ask another question after delay (callBack, timeout, nextQuestion Index);
+    delay(repeatProccess, 600, questionIndex + 1);
   }
 }
 
-//=== Function change feedback 
+//=== Function change feedback
 function changeFeedback(text) {
   feedback.textContent = text;
   feedback.classList.remove("hide");
 }
 
 //=== Function to ask question again
-function repeatProccess(questionIndex) {
+function repeatProccess(nextQuestionIndex) {
   //If more questions available repeat the proccess. Ask question and check results.
   //Else display results
-  if (questionIndex + 1 === questions.length) {
+  if (nextQuestionIndex === questions.length) {
     clearInterval(timerId);
     displayResults();
   } else {
-    askQuestion(questions[questionIndex + 1]);
-    checkTheAnswer(questions[questionIndex + 1], questionIndex + 1);
+    askQuestion(questions[nextQuestionIndex]);
+    checkTheAnswer(questions[nextQuestionIndex], nextQuestionIndex);
   }
 }
 
 //=== Function show final score screen
 function displayResults() {
-  const isTimeLeft = timeLeft >= 0;
-  if (isTimeLeft) claps.play();
+  if (timeLeft >= 0) claps.play();
   //hide questions screen
   questionsContainer.classList.add("hide");
   //show result screen
   endScreen.classList.remove("hide");
   //display message deppending on the result
-  endScreen.querySelector("h2").textContent = timeLeft > 0
-    ? "All questions complete!"
-    : "No more time left!";
+  endScreen.querySelector("h2").textContent =
+    timeLeft > 0 ? "All questions complete!" : "No more time left!";
 
   finalScore.textContent = score;
-  //if time left less than 0 still show 0
-  timeSpan.textContent = isTimeLeft ? timeLeft : 0;
+  //if time left less than 0 still show 0. excludes showing negative number
+  timeSpan.textContent = timeLeft >= 0 ? timeLeft : 0;
 
   submitBtn.addEventListener("click", saveResultToLocalStorage);
 }
 
 //=== Function saves current score and initials to local storage
-const saveResultToLocalStorage = () => {
+function saveResultToLocalStorage() {
+  const validatedInitials = validateInitials(initials.value);
+  if (!validatedInitials) return;
+
   const currentPersonResult = {
     score,
-    initials: initials.value,
+    initials: validatedInitials,
   };
 
-  //If some results exists add to existing array new result
-  //Else just add result in array to local storage
-  if (localStorage.getItem("results")) {
-    //retrive from local storage
-    const allResults = JSON.parse(localStorage.getItem("results"));
-    //Add current result to array with all results
-    const updatedResults = [...allResults, currentPersonResult];
-    //Save updated list of all results to local storage
-    localStorage.setItem("results", JSON.stringify(updatedResults));
-  } else {
-    // Save result to local storage
-    localStorage.setItem("results", JSON.stringify([currentPersonResult]));
-  }
+  //Get results array from localstorage or create an empty array
+  const allResults = JSON.parse(localStorage.getItem("results")) || [];
+  //add new score to the reulst array
+  allResults.push(currentPersonResult);
+  //save updated results array to localstorage
+  localStorage.setItem("results", JSON.stringify(allResults));
+
   submitBtn.removeEventListener("click", saveResultToLocalStorage);
   //transfer to highscores page
-  window.location.href = './highscores.html';
-};
-
-//=== function delay
-function delay(callBack, time, arguments) {
-  setTimeout(() => {
-    if (timeLeft) {
-      callBack(arguments);
-    }
-  }, time);
+  window.location.href = "./highscores.html";
 }
